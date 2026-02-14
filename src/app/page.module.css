@@ -137,5 +137,31 @@ a.secondary {
     --button-primary-hover: #ccc;
     --button-secondary-hover: #1a1a1a;
     --button-secondary-border: #1a1a1a;
+
+    /* 追加 */
+    --line-bg: #1a1a1a;
+    --line-text: #ededed;
+    --line-border: #333;
+
+    --line-selected-bg: #3b82f6;
+    --line-selected-text: #fff;
+    --line-selected-border: #3b82f6;
+  }
+
+  .lineButton {
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    border: 1px solid var(--line-border);
+    background: var(--line-bg);
+    color: var(--line-text);
+    font-weight: 400;
+  }
+
+  .lineButtonSelected {
+    border: 1px solid var(--line-selected-border);
+    background: var(--line-selected-bg);
+    color: var(--line-selected-text);
+    font-weight: 700;
   }
 }
