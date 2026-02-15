@@ -37,6 +37,13 @@ export default function Home() {
                     >
                       {line.name}
                       {isSelected ? "（選択中）" : ""}
+                      {isSelected && (
+                        <div
+                          style={{ marginTop: 8, fontSize: 14, opacity: 0.7 }}
+                        >
+                          railwayCode: {line.railwayCode}
+                        </div>
+                      )}
                     </button>
                   </li>
                 );
