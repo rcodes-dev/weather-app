@@ -4,11 +4,14 @@ import { fetchCurrentWeather } from "./lib/weatherApi";
 import styles from "./page.module.css";
 import { useState } from "react";
 import { weatherCodeToText } from "./lib/weatherCodeMap";
+import { Loader2 } from "lucide-react";
+import { PacmanLoader } from "react-spinners";
 
 export default function Home() {
   const [selectedAreaId, setSelectedAreaId] = useState<string | null>(null);
   const [weatherText, setWeatherText] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   return (
     <div className={styles.page}>
@@ -30,6 +33,8 @@ export default function Home() {
                         setSelectedAreaId(a.id);
                         setError(null);
                         setWeatherText(null);
+                        setIsLoading(true);
+
                         try {
                           const data = await fetchCurrentWeather(a);
                           const c = data.current;
@@ -38,6 +43,8 @@ export default function Home() {
                           );
                         } catch (e) {
                           setError("天気の取得に失敗しました");
+                        } finally {
+                          setIsLoading(false);
                         }
                       }}
                       style={{
@@ -54,6 +61,7 @@ export default function Home() {
                 );
               })}
             </ul>
+            {isLoading && <PacmanLoader color="#ffffff" />}
             {weatherText && <p style={{ marginTop: 16 }}>{weatherText}</p>}
             {error && <p style={{ marginTop: 16 }}>{error}</p>}
           </ul>
