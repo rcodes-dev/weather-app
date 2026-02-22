@@ -4,8 +4,8 @@ import { TOKYO_AREAS } from "./constants/tokyoAreas";
 import { fetchCurrentWeather } from "./lib/weatherApi";
 import styles from "./page.module.css";
 import { useState } from "react";
-import { weatherCodeToIcon } from "./lib/weatherCodeMap";
 import { PacmanLoader } from "react-spinners";
+import { weatherCodeToBg, weatherCodeToIcon } from "./lib/weatherUi";
 
 type GeoResult = {
   id?: number;
@@ -28,21 +28,6 @@ type WeatherResponse = {
   current?: WeatherCurrent;
 };
 
-function weatherCodeToBg(code: number | null, isDay: boolean | null): string {
-  const night = isDay === false;
-  if (code === null) return night ? "bg-default-night" : "bg-default";
-
-  if ([0, 1].includes(code)) return night ? "bg-sunny-night" : "bg-sunny";
-  if ([2].includes(code)) return night ? "bg-partly-night" : "bg-partly";
-  if ([3, 45, 48].includes(code))
-    return night ? "bg-cloudy-night" : "bg-cloudy";
-  if ([51, 53, 55, 61, 63, 65, 80].includes(code))
-    return night ? "bg-rainy-night" : "bg-rainy";
-  if ([71, 73, 75].includes(code)) return night ? "bg-snow-night" : "bg-snow";
-  if ([95].includes(code)) return night ? "bg-storm-night" : "bg-storm";
-
-  return night ? "bg-default-night" : "bg-default";
-}
 
 export default function Home() {
   const [selectedAreaId, setSelectedAreaId] = useState<string | null>(null);
