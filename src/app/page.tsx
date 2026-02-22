@@ -4,7 +4,7 @@ import { TOKYO_AREAS } from "./constants/tokyoAreas";
 import { fetchCurrentWeather } from "./lib/weatherApi";
 import styles from "./page.module.css";
 import { useState } from "react";
-import { weatherCodeToText } from "./lib/weatherCodeMap";
+import { weatherCodeToIcon } from "./lib/weatherCodeMap";
 import { PacmanLoader } from "react-spinners";
 
 type GeoResult = {
@@ -15,6 +15,34 @@ type GeoResult = {
   country?: string;
   admin1?: string;
 };
+
+type WeatherCurrent = {
+  temperature_2m?: number;
+  wind_speed_10m?: number;
+  precipitation?: number;
+  weather_code?: number;
+  is_day?: number;
+};
+
+type WeatherResponse = {
+  current?: WeatherCurrent;
+};
+
+function weatherCodeToBg(code: number | null, isDay: boolean | null): string {
+  const night = isDay === false;
+  if (code === null) return night ? "bg-default-night" : "bg-default";
+
+  if ([0, 1].includes(code)) return night ? "bg-sunny-night" : "bg-sunny";
+  if ([2].includes(code)) return night ? "bg-partly-night" : "bg-partly";
+  if ([3, 45, 48].includes(code))
+    return night ? "bg-cloudy-night" : "bg-cloudy";
+  if ([51, 53, 55, 61, 63, 65, 80].includes(code))
+    return night ? "bg-rainy-night" : "bg-rainy";
+  if ([71, 73, 75].includes(code)) return night ? "bg-snow-night" : "bg-snow";
+  if ([95].includes(code)) return night ? "bg-storm-night" : "bg-storm";
+
+  return night ? "bg-default-night" : "bg-default";
+}
 
 export default function Home() {
   const [selectedAreaId, setSelectedAreaId] = useState<string | null>(null);
@@ -29,6 +57,13 @@ export default function Home() {
   const [geoResults, setGeoResults] = useState<GeoResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [selected, setSelected] = useState<GeoResult | null>(null);
+  const [isDay, setIsDay] = useState<boolean | null>(null);
+
+  const [weatherCode, setWeatherCode] = useState<number | null>(null);
+  const WeatherIcon =
+    typeof weatherCode === "number"
+      ? weatherCodeToIcon(weatherCode, isDay)
+      : null;
 
   async function loadWeather(areaLike: {
     lat: number;
@@ -39,14 +74,28 @@ export default function Home() {
     setWeatherText(null);
     setWeatherTitle(areaLike.name);
     setIsLoading(true);
+    setWeatherCode(null);
+    setIsDay(null);
 
-    try {      
-      const data = await fetchCurrentWeather(areaLike as any);
+    try {
+      const data = (await fetchCurrentWeather(
+        areaLike as any,
+      )) as WeatherResponse;
       const c = data.current;
+
+      if (!c) {
+        throw new Error("current is missing");
+      }
+
+      const code = c.weather_code;
+
+      setIsDay(c.is_day === 1 ? true : c.is_day === 0 ? false : null);
+
+      setWeatherCode(typeof code === "number" ? code : null);
 
       setWeatherText(
         `気温: ${c.temperature_2m}°C / 風: ${c.wind_speed_10m} / 
-        降水: ${c.precipitation} / 天気:  ${weatherCodeToText(c.weather_code)}`,
+        降水: ${c.precipitation}`,
       );
     } catch {
       setError("天気の取得に失敗しました");
@@ -73,7 +122,7 @@ export default function Home() {
   }
 
   return (
-    <div className={styles.page}>
+    <div className={`${styles.page} ${weatherCodeToBg(weatherCode, isDay)}`}>
       <main>
         <h1>Weather App</h1>
         <p>東京エリアの天気 + 全国検索もできます。</p>
@@ -183,10 +232,31 @@ export default function Home() {
 
           {error && <p style={{ marginTop: 16 }}>{error}</p>}
 
-          {weatherTitle && weatherText && !isLoading && !error && (
+          <p>
+            isDay: {String(isDay)} / code: {weatherCode ?? "null"}
+          </p>
+
+          {!isLoading && !error && weatherTitle && (
             <div style={{ marginTop: 16 }}>
-              <div style={{ fontWeight: 700 }}>{weatherTitle} の天気</div>
-              <p style={{ marginTop: 8 }}>{weatherText}</p>
+              {weatherTitle && (
+                <div style={{ fontWeight: 700 }}>{weatherTitle} の天気</div>
+              )}
+
+              {WeatherIcon && (
+                <div
+                  style={{
+                    marginTop: 10,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 10,
+                  }}
+                >
+                  <WeatherIcon size={44} />
+                </div>
+              )}
+
+
+              {weatherText && <p style={{ marginTop: 8 }}>{weatherText}</p>}
             </div>
           )}
         </section>
