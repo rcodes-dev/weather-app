@@ -17,7 +17,10 @@ export function useGeocode() {
 
   const search = useCallback(async () => {
     const q = query.trim();
-    if (!q) { setResults([]); return; }
+    if (!q) {
+      setResults([]);
+      return;
+    }
     setIsSearching(true);
     try {
       const res = await fetch(`/api/geocode?q=${encodeURIComponent(q)}`);
